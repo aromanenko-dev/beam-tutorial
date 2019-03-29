@@ -1,7 +1,6 @@
 package org.apache.beam.tutorial.analytic;
 
 import org.apache.beam.sdk.Pipeline;
-import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.io.kafka.KafkaIO;
 import org.apache.beam.sdk.io.kafka.KafkaRecord;
 import org.apache.beam.sdk.options.Default;
@@ -40,7 +39,7 @@ public class FilterObjects {
   /**
    * Specific pipeline options.
    */
-  private interface Options extends PipelineOptions {
+  public interface FilterObjectsOptions extends PipelineOptions {
     @Description("Maximum coordinate value (axis X)")
     @Default.Integer(COORD_X)
     Integer getCoordX();
@@ -68,15 +67,16 @@ public class FilterObjects {
 
   }
 
-  private static class FilterObjectsByCoordinates implements SerializableFunction<String, Boolean> {
+  public static class FilterObjectsByCoordinates implements SerializableFunction<String, Boolean> {
     private Integer maxCoordX;
     private Integer maxCoordY;
 
-    public FilterObjectsByCoordinates(Integer maxCoordX, Integer maxCoordY) {
+    FilterObjectsByCoordinates(Integer maxCoordX, Integer maxCoordY) {
       this.maxCoordX = maxCoordX;
       this.maxCoordY = maxCoordY;
     }
 
+    @Override
     public Boolean apply(String input) {
       String[] split = input.split(",");
       if (split.length < 3) {
@@ -89,8 +89,9 @@ public class FilterObjects {
     }
   }
 
-  public final static void main(String[] args) throws Exception {
-    final Options options = PipelineOptionsFactory.fromArgs(args).withValidation().as(Options.class);
+  public static final void main(String[] args) throws Exception {
+    final FilterObjectsOptions options =
+        PipelineOptionsFactory.fromArgs(args).withValidation().as(FilterObjectsOptions.class);
     Pipeline pipeline = Pipeline.create(options);
     pipeline
         .apply(
@@ -111,7 +112,6 @@ public class FilterObjects {
         .apply(
             "FilterValidCoords",
             Filter.by(new FilterObjectsByCoordinates(options.getCoordX(), options.getCoordY())))
-
         .apply(
             "ExtractPayload",
             ParDo.of(

@@ -38,7 +38,7 @@
     </repositories>
 
     <properties>
-        <beam.version>2.6.0</beam.version>
+        <beam.version>2.11.0</beam.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spark2.version>2.2.1</spark2.version>
