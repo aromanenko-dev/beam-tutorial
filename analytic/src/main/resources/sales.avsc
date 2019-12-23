@@ -1,0 +1,11 @@
+{
+	"namespace": "example.avro",
+	"type": "record",
+    "name": "AvroGeneratedCarsSales",
+    "fields": [
+    	{"name": "id", "type": "int"},
+        {"name": "brand_name", "type": "string"},
+        {"name": "model_name", "type": "string"},
+        {"name": "sales_number", "type": "int"}
+	]
+}

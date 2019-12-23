@@ -39,6 +39,14 @@
             <version>${beam.version}</version>
         </dependency>
 
+        <!-- Beam SQL -->
+        <dependency>
+            <groupId>org.apache.beam</groupId>
+            <artifactId>beam-sdks-java-extensions-sql</artifactId>
+            <version>${beam.version}</version>
+        </dependency>
+
+        <!-- External deps -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
