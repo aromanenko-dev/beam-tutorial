@@ -17,13 +17,17 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * An example of batch pipeline showing how to count number of sales per cars brand.
- * Input file(s) should be a text log in the following format:
+ * An example of batch pipeline showing how to count number of sales per cars brand using Avro
+ * records and Beam SQL transform.
+ *
+ * <p>Input file(s) should be a text log in the following format:
+ *
  * <pre>
  *     id,brand_name,model_name,sales_number
  * </pre>
  *
  * Example of input log:
+ *
  * <pre>
  *     1,Renault,Scenic,3
  *     2,Peugeut,307,2
@@ -33,12 +37,12 @@ import java.io.IOException;
  * </pre>
  *
  * Example of output result:
+ *
  * <pre>
  *     Citroen: 8
  *     Renault: 7
  *     Peugeut: 2
  * </pre>
- *
  */
 public class SalesPerCarsBrandAvro {
 
@@ -60,56 +64,36 @@ public class SalesPerCarsBrandAvro {
     @Description("Input Path")
     @Default.String("/tmp/sales.avro")
     String getInputPath();
+
     void setInputPath(String value);
   }
 
   public static final void main(String args[]) throws Exception {
-    Options options =
-        PipelineOptionsFactory.fromArgs(args).withValidation().as(Options.class);
+    Options options = PipelineOptionsFactory.fromArgs(args).withValidation().as(Options.class);
     Pipeline pipeline = Pipeline.create(options);
 
     /* Create record/row */
-    PCollection<GenericRecord> records = pipeline.apply(
-        AvroIO.readGenericRecords(SCHEMA).withBeamSchemas(true).from(options.getInputPath()));
+    PCollection<GenericRecord> records =
+        pipeline.apply(
+            AvroIO.readGenericRecords(SCHEMA).withBeamSchemas(true).from(options.getInputPath()));
 
     /* SQL Transform */
-    records.apply(SqlTransform.query("SELECT SUM(sales_number), brand_name FROM PCOLLECTION GROUP BY brand_name"))
+    records
+        .apply(
+            SqlTransform.query(
+                "SELECT SUM(sales_number), brand_name FROM PCOLLECTION GROUP BY brand_name"))
+        .apply(
+            "Output",
+            MapElements.via(
+                new SimpleFunction<Row, Row>() {
 
-        .apply("Output", MapElements.via(new SimpleFunction<Row, Row>() {
-
-          @Override public Row apply(Row input) {
-            System.out.println("PCOLLECTION: " + input.getValues());
-            return input;
-          }
-        }));
+                  @Override
+                  public Row apply(Row input) {
+                    System.out.println("OUTPUT: " + input.getValues());
+                    return input;
+                  }
+                }));
 
     pipeline.run().waitUntilFinish();
   }
-
-  public static void main2(String[] args) throws IOException {
-    final String DATA_PATH = "other/src/main/resources";
-
-    PipelineOptions options = PipelineOptionsFactory.fromArgs(args).withValidation().create();
-    Pipeline p = Pipeline.create(options);
-
-    /* Schema definition */
-    Schema schema = new Schema.Parser().parse(new File(DATA_PATH + "/twitter.avsc"));
-
-    /* Create record/row */
-    PCollection<GenericRecord> records = p.apply(
-        AvroIO.readGenericRecords(schema).withBeamSchemas(true).from(DATA_PATH + "/twitter.avro"));
-
-    /* SQL Transform */
-    records.apply(SqlTransform.query("SELECT username FROM PCOLLECTION"))
-
-        .apply("Output", MapElements.via(new SimpleFunction<Row, Row>() {
-
-          @Override public Row apply(Row input) {
-            System.out.println("PCOLLECTION: " + input.getValues());
-            return input;
-          }
-        }));
-    p.run().waitUntilFinish();
-  }
-
 }
