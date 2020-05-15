@@ -42,7 +42,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spark2.version>2.3.2</spark2.version>
-        <spark2.jackson.version>2.9.8</spark2.jackson.version>
+        <spark2.jackson.version>2.11.0</spark2.jackson.version>
     </properties>
 
     <modules>
