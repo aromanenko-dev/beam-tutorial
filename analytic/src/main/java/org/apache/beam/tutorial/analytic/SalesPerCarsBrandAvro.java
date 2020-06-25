@@ -13,9 +13,6 @@ import org.apache.beam.sdk.transforms.*;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.Row;
 
-import java.io.File;
-import java.io.IOException;
-
 /**
  * An example of batch pipeline showing how to count number of sales per cars brand using Avro
  * records and Beam SQL transform.

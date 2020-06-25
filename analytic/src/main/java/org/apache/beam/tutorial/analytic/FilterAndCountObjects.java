@@ -25,16 +25,15 @@ public class FilterAndCountObjects {
             .as(FilterObjects.FilterObjectsOptions.class);
 
     Pipeline pipeline = Pipeline.create(options);
-pipeline
-    .apply(
-        KafkaIO.<Long, String>read()
-            .withBootstrapServers(options.getBootstrap())
-            .withTopic(options.getInputTopic())
-            .withKeyDeserializer(LongDeserializer.class)
-            .withValueDeserializer(StringDeserializer.class))
-    .apply(
-        Window.<KafkaRecord<Long, String>>into(
-            FixedWindows.of(Duration.standardSeconds(10))))
+    pipeline
+        .apply(
+            KafkaIO.<Long, String>read()
+                .withBootstrapServers(options.getBootstrap())
+                .withTopic(options.getInputTopic())
+                .withKeyDeserializer(LongDeserializer.class)
+                .withValueDeserializer(StringDeserializer.class))
+        .apply(
+            Window.<KafkaRecord<Long, String>>into(FixedWindows.of(Duration.standardSeconds(10))))
         .apply(
             ParDo.of(
                 new DoFn<KafkaRecord<Long, String>, String>() {
@@ -49,35 +48,35 @@ pipeline
             Filter.by(
                 new FilterObjects.FilterObjectsByCoordinates(
                     options.getCoordX(), options.getCoordY())))
-.apply(
-    ParDo.of(
-        new DoFn<String, KV<Long, String>>() {
-          @ProcessElement
-          public void processElement(ProcessContext processContext) {
-            String payload = processContext.element();
-            String[] split = payload.split(",");
-            if (split.length < 3) {
-              return;
-            }
-            Long id = Long.valueOf(split[0]);
+        .apply(
+            ParDo.of(
+                new DoFn<String, KV<Long, String>>() {
+                  @ProcessElement
+                  public void processElement(ProcessContext processContext) {
+                    String payload = processContext.element();
+                    String[] split = payload.split(",");
+                    if (split.length < 3) {
+                      return;
+                    }
+                    Long id = Long.valueOf(split[0]);
 
-            processContext.output(KV.of(id, payload));
-          }
-        }))
-.apply(GroupByKey.<Long, String>create())
-.apply(
-    ParDo.of(
-        new DoFn<KV<Long, Iterable<String>>, KV<Long, Long>>() {
-          @ProcessElement
-          public void processElement(ProcessContext processContext) {
-            Long id = processContext.element().getKey();
-            long count = 0;
-            for (String entry : processContext.element().getValue()) {
-              count++;
-            }
-            processContext.output(KV.of(id, count));
-          }
-        }))
+                    processContext.output(KV.of(id, payload));
+                  }
+                }))
+        .apply(GroupByKey.<Long, String>create())
+        .apply(
+            ParDo.of(
+                new DoFn<KV<Long, Iterable<String>>, KV<Long, Long>>() {
+                  @ProcessElement
+                  public void processElement(ProcessContext processContext) {
+                    Long id = processContext.element().getKey();
+                    long count = 0;
+                    for (String entry : processContext.element().getValue()) {
+                      count++;
+                    }
+                    processContext.output(KV.of(id, count));
+                  }
+                }))
         .apply(
             "ExtractPayload",
             ParDo.of(

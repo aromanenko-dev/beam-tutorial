@@ -7,13 +7,15 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.PCollection;
 
 /**
- * An example of batch pipeline showing how to count number of sales per cars brand.
- * Input file(s) should be a text log in the following format:
+ * An example of batch pipeline showing how to count number of sales per cars brand. Input file(s)
+ * should be a text log in the following format:
+ *
  * <pre>
  *     id,brand_name,model_name,sales_number
  * </pre>
  *
  * Example of input log:
+ *
  * <pre>
  *     1,Renault,Scenic,3
  *     2,Peugeut,307,2
@@ -23,20 +25,19 @@ import org.apache.beam.sdk.values.PCollection;
  * </pre>
  *
  * Example of output result:
+ *
  * <pre>
  *     Citroen: 8
  *     Renault: 7
  *     Peugeut: 2
  * </pre>
- *
  */
 public class SalesPerCarsBrand {
 
   public static final void main(String args[]) throws Exception {
     Pipeline pipeline = Pipeline.create();
 
-    PCollection<String> input =
-        pipeline.apply(TextIO.read().from("/tmp/beam/cars_sales_log"));
+    PCollection<String> input = pipeline.apply(TextIO.read().from("/tmp/beam/cars_sales_log"));
 
     PCollection<KV<String, Integer>> parseAndConvertToKV =
         input.apply(
